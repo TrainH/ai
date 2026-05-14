@@ -91,9 +91,9 @@ const Register = () => {
               >
                 <Input size="large" disabled={emailVerified} style={{ flex: 1 }} />
               </Form.Item>
-              <Button 
-                size="large" 
-                onClick={handleSendCode} 
+              <Button
+                size="large"
+                onClick={handleSendCode}
                 loading={sendingCode}
                 disabled={emailVerified}
               >
@@ -111,8 +111,8 @@ const Register = () => {
                 >
                   <Input size="large" placeholder="6자리 코드 입력" disabled={emailVerified} style={{ flex: 1 }} />
                 </Form.Item>
-                <Button 
-                  size="large" 
+                <Button
+                  size="large"
                   onClick={handleVerifyCode}
                   disabled={emailVerified}
                   type={emailVerified ? 'default' : 'primary'}
@@ -122,8 +122,20 @@ const Register = () => {
               </div>
             </Form.Item>
           )}
-          
-          <Form.Item name="password" label="비밀번호" rules={[{ required: true, message: '비밀번호를 입력해주세요' }, { min: 8, message: '최소 8자 이상이어야 합니다.' }]}>
+
+          <Form.Item
+            name="password"
+            label="비밀번호"
+            extra="8자 이상의 영문, 숫자, 특수문자를 포함해야 합니다."
+            rules={[
+              { required: true, message: '비밀번호를 입력해주세요' },
+              { min: 8, message: '최소 8자 이상이어야 합니다.' },
+              {
+                pattern: /^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[@#$%^&+=!_]).*$/,
+                message: '영문, 숫자, 특수문자를 포함해야 합니다.'
+              }
+            ]}
+          >
             <Input.Password size="large" />
           </Form.Item>
 
