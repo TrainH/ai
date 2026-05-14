@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: auth-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: auth_db
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  backend:
+    image: eclipse-temurin:17-jdk-alpine
+    container_name: auth-backend
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+      - gradle_cache:/root/.gradle
+    environment:
+      - MAIL_HOST=smtp.gmail.com
+      - MAIL_PORT=587
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+    ports:
+      - "8080:8080"
+    command: ./gradlew bootRun
+    depends_on:
+      - db
+
+  frontend:
+    image: node:20-alpine
+    container_name: auth-frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
+    command: npm run dev -- --host
+
+  admin:
+    image: node:20-alpine
+    container_name: auth-admin
+    working_dir: /app
+    volumes:
+      - ./admin:/app
+    ports:
+      - "5174:5173"
+    command: npm run dev -- --host
+
+volumes:
+  mysql_data:
+  gradle_cache:

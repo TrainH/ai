@@ -1,0 +1,28 @@
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build
+build/
+bin/
+out/
+target/
+dist/
+.gradle/
+
+# Dependencies
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment & Secrets
+.env
+*.local
+*.log
+
+# Docker
+.docker/
