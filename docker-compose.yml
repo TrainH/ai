@@ -41,6 +41,8 @@ services:
       - ./frontend:/app
     ports:
       - "5173:5173"
+    environment:
+      - VITE_NAVER_MAP_CLIENT_ID=${VITE_NAVER_MAP_CLIENT_ID}
     command: npm run dev -- --host
 
   admin:
@@ -51,6 +53,8 @@ services:
       - ./admin:/app
     ports:
       - "5174:5173"
+    environment:
+      - VITE_NAVER_MAP_CLIENT_ID=${VITE_NAVER_MAP_CLIENT_ID}
     command: npm run dev -- --host
 
 volumes:

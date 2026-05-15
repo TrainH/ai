@@ -64,7 +64,7 @@ const MyPage = () => {
   return (
     <div>
       <Title level={2}>마이페이지</Title>
-      
+
       <Card title="내 정보" style={{ marginBottom: 24 }}>
         <Descriptions column={1} bordered>
           <Descriptions.Item label="이메일">{user.email}</Descriptions.Item>
@@ -97,7 +97,7 @@ const MyPage = () => {
       </Card>
 
       <Divider />
-      
+
       <div style={{ textAlign: 'right' }}>
         <Popconfirm title="정말 탈퇴하시겠습니까? 복구할 수 없습니다." onConfirm={handleWithdraw} okText="탈퇴" cancelText="취소">
           <Button danger>회원 탈퇴</Button>

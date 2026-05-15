@@ -5,6 +5,7 @@ import Home from './pages/home/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import MyPage from './pages/user/MyPage';
+import MapPage from './pages/map/MapPage';
 
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const { isAuthenticated } = useAuth();
@@ -21,6 +22,7 @@ function App() {
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
+            <Route path="map" element={<MapPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
