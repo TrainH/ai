@@ -47,6 +47,20 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody Map<String, String> request) {
+        try {
+            String refreshToken = request.get("refreshToken");
+            if (refreshToken == null || refreshToken.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Refresh Token이 필요합니다."));
+            }
+            AuthResponse response = authService.refreshAccessToken(refreshToken);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
     @PostMapping("/email/send")
     public ResponseEntity<?> sendEmail(@RequestBody Map<String, String> request) {
         try {

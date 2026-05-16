@@ -83,6 +83,77 @@ public class AuthService {
     }
 
     @Transactional
+    public void logout(String refreshTokenString) {
+        // Refresh Token이 없거나 비어있으면 그냥 통과 (이미 로그아웃된 상태)
+        if (refreshTokenString == null || refreshTokenString.isBlank()) {
+            return;
+        }
+
+        // DB에서 해당 Refresh Token을 조회하여 폐기 처리
+        refreshTokenRepository.findByTokenHash(refreshTokenString).ifPresent(token -> {
+            // 이미 폐기된 토큰이 아닐 경우에만 처리
+            if (token.getRevokedAt() == null) {
+                token.setRevokedAt(java.time.LocalDateTime.now());
+                refreshTokenRepository.save(token);
+            }
+        });
+    }
+
+    @Transactional
+    public AuthResponse refreshAccessToken(String refreshTokenString) {
+        // 1. DB에서 Refresh Token 조회
+        RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(refreshTokenString)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 Refresh Token입니다."));
+
+        // 2. 만료 또는 폐기 여부 확인
+        if (refreshToken.getRevokedAt() != null) {
+            throw new IllegalArgumentException("이미 폐기된 Refresh Token입니다.");
+        }
+        if (refreshToken.getExpiresAt().isBefore(java.time.LocalDateTime.now())) {
+            throw new IllegalArgumentException("Refresh Token이 만료되었습니다. 다시 로그인해주세요.");
+        }
+
+        // 3. 사용자 조회 및 상태 확인
+        User user = refreshToken.getUser();
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("로그인 할 수 없는 상태입니다.");
+        }
+
+        // 4. 새 Access Token 발급
+        org.springframework.security.core.userdetails.User principal =
+                new org.springframework.security.core.userdetails.User(
+                        user.getEmail(), "",
+                        java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority(user.getRole().name()))
+                );
+        Authentication authentication = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+        String newAccessToken = jwtTokenProvider.createAccessToken(authentication);
+
+        // 5. Refresh Token Rotation — 새 Refresh Token 발급 및 기존 폐기
+        String newRefreshTokenString = jwtTokenProvider.createRefreshToken();
+        refreshToken.setRevokedAt(java.time.LocalDateTime.now()); // 기존 토큰 폐기
+        refreshTokenRepository.save(refreshToken);
+
+        RefreshToken newRefreshToken = RefreshToken.builder()
+                .user(user)
+                .tokenHash(newRefreshTokenString)
+                .expiresAt(java.time.LocalDateTime.now().plusDays(7))
+                .build();
+        refreshTokenRepository.save(newRefreshToken);
+
+        return AuthResponse.builder()
+                .success(true)
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshTokenString)
+                .user(AuthResponse.UserDto.builder()
+                        .id(user.getId())
+                        .email(user.getEmail())
+                        .name(user.getName())
+                        .role(user.getRole())
+                        .build())
+                .build();
+    }
+
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
