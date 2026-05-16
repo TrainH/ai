@@ -3,6 +3,7 @@ import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState } from 'react';
 import { MenuOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons';
+import { authService } from '../../api/services/authService';
 
 const { Header, Content, Footer } = Layout;
 const { useBreakpoint } = Grid;
@@ -17,8 +18,9 @@ const AppLayout = () => {
   const isMapPage = location.pathname === '/map';
   const isMobile = !screens.md;
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await authService.logout(); // 서버에 Refresh Token 폐기 요청
+    logout();                   // Context 상태 초기화
     navigate('/login');
     setIsDrawerOpen(false);
   };

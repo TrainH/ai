@@ -6,11 +6,13 @@ import com.project.backend.domain.auth.dto.RegisterRequest;
 import com.project.backend.domain.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -39,7 +41,7 @@ public class AuthController {
             AuthResponse response = authService.login(request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("로그인 실패 - email: {}, reason: {}", request.getEmail(), e.getMessage());
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "message", "이메일 또는 비밀번호가 올바르지 않습니다."
@@ -59,6 +61,13 @@ public class AuthController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", e.getMessage()));
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestBody Map<String, String> request) {
+        // 서버 측 Refresh Token 폐기 (실패해도 클라이언트는 로그아웃 처리)
+        authService.logout(request.get("refreshToken"));
+        return ResponseEntity.ok(Map.of("success", true, "message", "로그아웃 되었습니다."));
     }
 
     @PostMapping("/email/send")
