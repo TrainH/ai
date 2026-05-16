@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   db:
@@ -10,7 +10,7 @@ services:
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3306:3306"
+      - "127.0.0.1:${DB_PORT}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
@@ -33,7 +33,7 @@ services:
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
     ports:
-      - "8080:8080"
+      - "${BACKEND_PORT}:8080"
     command: ./gradlew bootRun
     depends_on:
       - db
@@ -44,11 +44,12 @@ services:
     working_dir: /app
     volumes:
       - ./frontend:/app
+      - /app/node_modules
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT}:5173"
     environment:
       - VITE_NAVER_MAP_CLIENT_ID=${VITE_NAVER_MAP_CLIENT_ID}
-    command: npm run dev -- --host
+    command: sh -c "npm install && npm run dev -- --host"
 
   admin:
     image: node:20-alpine
@@ -56,11 +57,12 @@ services:
     working_dir: /app
     volumes:
       - ./admin:/app
+      - /app/node_modules
     ports:
-      - "5174:5173"
+      - "${ADMIN_PORT}:5173"
     environment:
       - VITE_NAVER_MAP_CLIENT_ID=${VITE_NAVER_MAP_CLIENT_ID}
-    command: npm run dev -- --host
+    command: sh -c "npm install && npm run dev -- --host"
 
 volumes:
   mysql_data:
